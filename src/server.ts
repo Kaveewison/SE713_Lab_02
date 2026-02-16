@@ -83,58 +83,53 @@ const events: Event[] = [
     petsAllowed: false,
     organizer: "Education Foundation",
   },
-
 ];
-
-
-app.get("/", (req: Request, res: Response) => {
-  res.send("Welcome to SE713 Lab 02!");
-});
 
 app.listen(port, () => {
   console.log(`App listening at http://localhost:${port}`);
 });
 
-app.get("/test", (req: Request, res: Response) => {
-  const id = req.query.id;
-  const output = `id: ${id}`;
-  res.send(output);
-});
+function getEventByCategory(category: string): Event[] {
+  const filteredEvents = events.filter((event) => event.category === category);
+  return filteredEvents;
+}
 
-app.get("/test", (req, res) => {
-  let returnObj = {
-    name: "test",
-    age: 20,
-    address: "Thai",
-  };
-  res.send(returnObj);
-});
+function getAllEvents(): Event[] {
+  return events;
+}
 
- app.get("/events", (req, res) => {
-    if (req.query.category) {
-    const category = req.query.category;
-    const filteredEvents = events.filter((event) => event.category === category);
+function getEventById(id: number): Event | undefined {
+  return events.find((event) => event.id === id);
+}
+
+function addEvent(newEvent: Event): Event {
+  newEvent.id = events.length + 1;
+  events.push(newEvent);
+  return newEvent;
+}
+
+app.get("/events", (req, res) => {
+  if (req.query.category) {
+    const category = req.query.category as string;
+    const filteredEvents = getEventByCategory(category);
     res.json(filteredEvents);
-    } else {
-    res.json(events);
-    }
+  } else {
+    res.json(getAllEvents());
+  }
 });
 
 app.get("/events/:id", (req, res) => {
-    const id = parseInt(req.params.id);
-    const event = events.find((event) => event.id === id);
-    if (event) {
+  const id = parseInt(req.params.id);
+  const event = getEventById(id);
+  if (event) {
     res.json(event);
-    } else {
+  } else {
     res.status(404).send("Event not found");
-    }
-});  
-
-
- app.post("/events", (req, res) => {
-    const newEvent: Event = req.body;
-    newEvent.id = events.length + 1;
-    events.push(newEvent);
-    res.json(newEvent);
+  }
 });
 
+app.post("/events", (req, res) => {
+  const newEvent: Event = req.body;
+  addEvent(newEvent);
+  res.json(newEvent);
+});
